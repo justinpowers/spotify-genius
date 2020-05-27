@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import SearchBar from '../SearchBar/SearchBar';
 import SearchResults from '../SearchResults/SearchResults';
+import Playlist from '../Playlist/Playlist';
 
 const searchResults = [
   {
@@ -48,16 +49,7 @@ function App() {
       <main>
         <SearchBar />
         <SearchResults searchResults={searchResults} />
-        <div className="Playlist">
-          <h2>Playlist In Progress</h2>
-          <ul className="TrackList">
-            {playlistTracks.map((track) => (
-              <li key={track.id}>
-                &quot;{track.title}&quot; - {track.artist}, <i>{track.album}</i>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <Playlist playlistTracks={playlistTracks} />
       </main>
       <footer />
     </div>
