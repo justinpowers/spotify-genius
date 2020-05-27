@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import SearchBar from '../SearchBar/SearchBar';
+import SearchResults from '../SearchResults/SearchResults';
 
 const searchResults = [
   {
@@ -46,16 +47,7 @@ function App() {
       </header>
       <main>
         <SearchBar />
-        <div className="SearchResults">
-          <h2>Search Results</h2>
-          <ul className="TrackList">
-            {searchResults.map((track) => (
-              <li key={track.id}>
-                &quot;{track.title}&quot; - {track.artist}, <i>{track.album}</i>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <SearchResults searchResults={searchResults} />
         <div className="Playlist">
           <h2>Playlist In Progress</h2>
           <ul className="TrackList">
