@@ -1,18 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Playlist.css';
+import TrackList from '../TrackList/TrackList';
 
 function Playlist({ playlistTracks }) {
   return (
     <div className="Playlist">
       <h2>Playlist In Progress</h2>
-      <ul className="TrackList">
-        {playlistTracks.map((track) => (
-          <li key={track.id}>
-            &quot;{track.title}&quot; - {track.artist}, <i>{track.album}</i>
-          </li>
-        ))}
-      </ul>
+      <TrackList trackList={playlistTracks} />
     </div>
   );
 }
