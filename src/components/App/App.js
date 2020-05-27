@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import SearchBar from '../SearchBar/SearchBar';
 
 const searchResults = [
   {
@@ -44,12 +45,7 @@ function App() {
         <h1>Spotify Genius!!!</h1>
       </header>
       <main>
-        <div className="SearchBar">
-          <input type="text" placeholder="Search lyrics..." />
-          <button className="SearchButton" type="button">
-            Search
-          </button>
-        </div>
+        <SearchBar />
         <div className="SearchResults">
           <h2>Search Results</h2>
           <ul className="TrackList">
