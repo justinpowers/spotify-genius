@@ -1,13 +1,15 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import SearchBar from './SearchBar';
 
-test('render search bar', () => {
-  const { getByPlaceholderText, getByRole } = render(<SearchBar />);
+const setup = () => {
+  const { getByLabelText } = render(<SearchBar />);
+  return getByLabelText('lyrics-search-input');
+};
 
-  const searchField = getByPlaceholderText(/Search lyrics.../);
-  expect(searchField).toBeInTheDocument();
+test('update value upon change in input', () => {
+  const input = setup();
 
-  const searchButton = getByRole('button');
-  expect(searchButton).toBeInTheDocument();
+  fireEvent.change(input, { target: { value: 'x' } });
+  expect(input.value).toBe('x');
 });
