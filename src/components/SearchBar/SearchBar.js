@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import './SearchBar.css';
 
-function SearchBar() {
+function SearchBar({ onSearch }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleChange = (e) => setSearchTerm(e.target.value);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (searchTerm && searchTerm !== '') {
-      console.log(`Searching for: ${searchTerm}`);
-    }
+    onSearch(searchTerm);
   };
 
   return (
@@ -28,5 +27,9 @@ function SearchBar() {
     </form>
   );
 }
+
+SearchBar.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+};
 
 export default SearchBar;

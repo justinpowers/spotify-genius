@@ -1,53 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import SearchBar from '../SearchBar/SearchBar';
 import SearchResults from '../SearchResults/SearchResults';
 import Playlist from '../Playlist/Playlist';
-
-const searchResults = [
-  {
-    id: 0,
-    title: 'Another Love Song',
-    artist: 'Sappy Sammy',
-    album: 'Songs to Die For',
-  },
-  {
-    id: 1,
-    title: 'Sports! Sports! Sports!',
-    artist: 'Long-Haired Lars',
-    album: 'Selling Out',
-  },
-  {
-    id: 2,
-    title: 'My Country',
-    artist: 'Tommy Twang',
-    album: 'I Lost My...',
-  },
-];
-
-const playlistTracks = [
-  {
-    id: 3,
-    title: 'Hippity Hop',
-    artist: 'Lil B.I.G.',
-    album: 'Beats and More Beats',
-  },
-  {
-    id: 4,
-    title: 'Loopy Lullabies',
-    artist: 'Icelandic Idaho',
-    album: 'Air Conditioners and Other Sounds',
-  },
-];
+import searchGenius from '../../utils/genius';
 
 function App() {
+  const [searchResults, setSearchResults] = useState([]);
+  const [playlistTracks, setPlaylistTracks] = useState([]);
+
+  const search = async (searchTerm) => {
+    let results = [];
+    if (searchTerm && searchTerm !== '') {
+      results = await searchGenius(searchTerm);
+    }
+    setSearchResults(results);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Spotify Genius!!!</h1>
       </header>
       <main>
-        <SearchBar />
+        <SearchBar onSearch={search} />
         <SearchResults searchResults={searchResults} />
         <Playlist playlistTracks={playlistTracks} />
       </main>
