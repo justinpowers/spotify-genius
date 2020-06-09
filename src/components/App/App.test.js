@@ -1,22 +1,37 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from './App';
 
-test('renders essential structure of spotify genius', () => {
-  const { getByText, getByPlaceholderText } = render(<App />);
+describe('initial display of App', () => {
+  let screen;
 
-  const titleHeader = getByText(/Spotify Genius!!!/);
-  expect(titleHeader).toBeInTheDocument();
+  beforeEach(() => {
+    screen = render(<App />);
+  });
 
-  const searchField = getByPlaceholderText(/Search lyrics.../);
-  expect(searchField).toBeInTheDocument();
+  test('for display of title header', () => {
+    const titleHeader = screen.getByText(/Spotify Genius!!!/);
+    expect(titleHeader).toBeInTheDocument();
+  });
 
-  const searchButton = screen.getByRole('button');
-  expect(searchButton).toBeInTheDocument();
+  test('for presence of SearchBar elements', () => {
+    const inputHint = screen.getByPlaceholderText(/Search lyrics.../);
+    expect(inputHint).toBeInTheDocument();
 
-  const searchResultsHeader = getByText(/Search Results/);
-  expect(searchResultsHeader).toBeInTheDocument();
+    const inputField = screen.getByLabelText('lyrics-search-input');
+    expect(inputField.value).toBe('');
 
-  const playlistInProgressHeader = getByText(/Playlist In Progress/);
-  expect(playlistInProgressHeader).toBeInTheDocument();
+    const searchButton = screen.getByRole('button');
+    expect(searchButton).toBeInTheDocument();
+  });
+
+  test('for presence SearchResults component', () => {
+    const searchResultsHeader = screen.getByText(/Search Results/);
+    expect(searchResultsHeader).toBeInTheDocument();
+  });
+
+  test('for presence of Playlist component', () => {
+    const playlistInProgressHeader = screen.getByText(/Playlist In Progress/);
+    expect(playlistInProgressHeader).toBeInTheDocument();
+  });
 });
