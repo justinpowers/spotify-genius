@@ -3,7 +3,6 @@ import './App.css';
 import SearchBar from '../SearchBar/SearchBar';
 import SearchResults from '../SearchResults/SearchResults';
 import Playlist from '../Playlist/Playlist';
-import searchGenius from '../../utils/genius';
 
 function App() {
   const [searchResults, setSearchResults] = useState([]);
@@ -11,8 +10,17 @@ function App() {
 
   const search = async (searchTerm) => {
     let results = [];
-    if (searchTerm && searchTerm !== '') {
-      results = await searchGenius(searchTerm);
+    if (searchTerm) {
+      const url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
+      url.pathname = '/lyrics';
+      url.searchParams.set('q', searchTerm);
+      console.log(url);
+      try {
+        const response = await fetch(url);
+        results = await response.json();
+      } catch (error) {
+        console.log(error);
+      }
     }
     setSearchResults(results);
   };
