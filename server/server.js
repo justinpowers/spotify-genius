@@ -3,7 +3,7 @@ const http = require('http');
 const genius = require('./genius');
 
 const routes = {
-  '/lyrics': {
+  '/songs': {
     HEAD: '',
     GET: 'search',
   },
@@ -24,7 +24,7 @@ const server = http.createServer(async (req, res) => {
       res.statusCode = 405;
       res.statusMessage = 'Bad Method';
       res.setHeader('Allow', Object.keys(routes[route]).join(', '));
-    } else if (!url.searchParams.get('q')) {
+    } else if (!url.searchParams.get('lyrics')) {
       res.statusCode = 400;
       res.statusMessage = 'Bad Request - Missing Query Parameter';
     }

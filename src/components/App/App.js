@@ -12,8 +12,8 @@ function App() {
     let results = [];
     if (searchTerm) {
       const url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
-      url.pathname = '/lyrics';
-      url.searchParams.set('q', searchTerm);
+      url.pathname = '/songs';
+      url.searchParams.set('lyrics', searchTerm);
       console.log(url);
       try {
         const response = await fetch(url);
