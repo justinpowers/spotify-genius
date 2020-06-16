@@ -2,37 +2,50 @@ require('dotenv').config();
 const http = require('http');
 const genius = require('./genius');
 
+const routes = {
+  '/lyrics': {
+    HEAD: '',
+    GET: 'search',
+  },
+};
+
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  try {
+    const { method, headers } = req;
+    const url = new URL(req.url, `http://${headers.host}`);
+    const route = url.pathname;
 
-  console.log(`Received ${req.method} request for ${req.url}`);
+    console.log(`Received ${method} request for ${url}`);
 
-  if (url.pathname !== '/lyrics') {
-    res.statusCode = 404;
-    res.statusMessage = 'Not Found';
-  } else if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.statusCode = 405;
-    res.statusMessage = 'Bad Method';
-    res.setHeader('Allow', 'HEAD, GET');
-  } else if (!url.searchParams.has('q')) {
-    res.statusCode = 400;
-    res.statusMessage = 'Bad Request - Missing Query Parameter';
+    if (!(route in routes)) {
+      res.statusCode = 404;
+      res.statusMessage = 'Not Found';
+    } else if (!(method in routes[route])) {
+      res.statusCode = 405;
+      res.statusMessage = 'Bad Method';
+      res.setHeader('Allow', Object.keys(routes[route]).join(', '));
+    } else if (!url.searchParams.get('q')) {
+      res.statusCode = 400;
+      res.statusMessage = 'Bad Request - Missing Query Parameter';
+    }
+
+    let body = '';
+    if (res.statusCode >= 400) {
+      res.setHeader('Content-Type', 'text/html');
+      body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
+    } else {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      const results = await genius.queryGeniusAPI(url.searchParams.get('q'));
+      body = JSON.stringify(results);
+    }
+
+    res.setHeader('Content-Length', Buffer.byteLength(body));
+    res.writeHead(res.statusCode);
+    res.end(body);
+  } catch (error) {
+    console.log(error);
   }
-
-  let body = '';
-  if (res.statusCode >= 400) {
-    res.setHeader('Content-Type', 'text/html');
-    body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
-  } else {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    const results = await genius.queryGeniusAPI(url.searchParams.get('q'));
-    body = JSON.stringify(results);
-  }
-
-  res.setHeader('Content-Length', Buffer.byteLength(body));
-  res.writeHead(res.statusCode);
-  res.end(body);
 });
 
 const host = process.env.SERVER_HOST;
