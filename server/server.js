@@ -1,10 +1,10 @@
-require('dotenv').config();
+require('../utils/envvar').load();
 const http = require('http');
 const songs = require('./songs');
 
-// not a fan of this structure, but for now...
+// not a fan of this structure, but it works for now.
 //   probably should move this data into the imported file
-//   also, requires error-prone redundant head/get handler declaration
+//   also, remove error-prone redundant head/get handler declaration
 const routes = {
   '/songs': {
     methods: {
