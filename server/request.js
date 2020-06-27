@@ -18,16 +18,15 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
       options.headers['Content-Length'] = Buffer.byteLength(body);
     }
 
-    const outgoingMessageLabel = 'Outgoing Request';
-    console.group(outgoingMessageLabel);
-    // console.log(options);
+    console.log('Outgoing Req for: ', url.href);
+    console.log('Request options: ', options);
+    if (body) {
+      console.log('Request body: ', body);
+    }
 
     const req = https.request(url, options, (res) => {
       try {
-        const messagingLabel = 'Incoming Response';
-        console.group(messagingLabel);
-        // console.log('Status Code: ', res.statusCode);
-        // console.log('Headers: ', res.headers);
+        console.log('Incoming Response: ', res.headers.status);
 
         if (res.statusCode !== 200) {
           throw new Error(`Request Failed. Status Code: ${res.statusCode}`);
@@ -37,30 +36,31 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
           throw new Error(`Response aborted before message completed.`);
         });
 
-        const dataMessage = 'Data chunk received';
         const rawData = [];
         res.on('data', (chunk) => {
-          // cconsole.count(dataMessage);
           rawData.push(chunk);
         });
 
         res.on('end', () => {
-          console.log('End of data stream.');
-          // console.countReset(dataMessage);
-          console.groupEnd(messagingLabel);
           try {
             if (!res.complete) {
               throw new Error(
                 `Connection terminated before message completed.`
               );
             }
+            console.log('Response data stream completed.');
+
             const contentType = res.headers['content-type'];
-            if (!contentType.includes('application/json')) {
+            let parsedData;
+            if (contentType.includes('application/json')) {
+              parsedData = JSON.parse(Buffer.concat(rawData).toString());
+            } else if (contentType.includes('text/html')) {
+              parsedData = Buffer.concat(rawData).toString();
+            } else {
               throw new Error(
-                `Invalid Content Type: ${contentType}\n Expected application/json.`
+                `Invalid Content Type: "${contentType}". Expected application/json.`
               );
             }
-            const parsedData = JSON.parse(Buffer.concat(rawData).toString());
             return resolve(parsedData);
           } catch (e) {
             return reject(e);
@@ -77,10 +77,7 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
       return reject(e);
     });
 
-    // console.log(body);
     req.end(body);
-
-    console.groupEnd(outgoingMessageLabel);
   });
 }
 
