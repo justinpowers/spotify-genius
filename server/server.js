@@ -1,18 +1,18 @@
 require('../utils/envvar').load();
 const http = require('http');
-const songs = require('./songs');
+const tracks = require('./tracks');
 
 // not a fan of this structure, but it works for now.
 //   probably should move this data into the imported file
 //   also, remove error-prone redundant head/get handler declaration
 const routes = {
-  '/songs': {
+  '/tracks': {
     methods: {
       HEAD: {
-        handler: songs.getSongs,
+        handler: tracks.getTracks,
       },
       GET: {
-        handler: songs.getSongs,
+        handler: tracks.getTracks,
       },
     },
   },

@@ -12,7 +12,7 @@ function App() {
     let results = [];
     if (searchTerm) {
       const url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
-      url.pathname = '/songs';
+      url.pathname = '/tracks';
       url.searchParams.set('lyrics', searchTerm);
       console.log(url);
       try {
