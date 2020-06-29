@@ -18,7 +18,7 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
       options.headers['Content-Length'] = Buffer.byteLength(body);
     }
 
-    console.log('Outgoing Req for: ', url.href);
+    console.log('Outgoing Req for: ', url.href ? url.href : url);
     console.log('Request options: ', options);
     if (body) {
       console.log('Request body: ', body);
@@ -26,7 +26,7 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
 
     const req = https.request(url, options, (res) => {
       try {
-        console.log('Incoming Response: ', res.headers.status);
+        console.log('Incoming Response: ', res.statusCode);
 
         if (res.statusCode !== 200) {
           throw new Error(`Request Failed. Status Code: ${res.statusCode}`);
@@ -57,9 +57,7 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
             } else if (contentType.includes('text/html')) {
               parsedData = Buffer.concat(rawData).toString();
             } else {
-              throw new Error(
-                `Invalid Content Type: "${contentType}". Expected application/json.`
-              );
+              throw new Error(`Invalid Content Type: "${contentType}"`);
             }
             return resolve(parsedData);
           } catch (e) {
