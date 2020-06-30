@@ -1,90 +1,78 @@
-// require('../utils/envvar')();
 const request = require('./request');
 
-let accessToken = '';
+let accessTokenPromise;
 
 async function requestTokenFromAPI() {
   const clientKey = process.env.SPOTIFY_CLIENT_KEY;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-  const auth = Buffer.from(`${clientKey}:${clientSecret}`).toString('base64');
+  const basicAuth = `Basic ${Buffer.from(
+    `${clientKey}:${clientSecret}`
+  ).toString('base64')}`;
   const postData = new URLSearchParams([['grant_type', 'client_credentials']]);
   const url = new URL('https://accounts.spotify.com/api/token');
   const options = {
     method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-    },
+    headers: { Authorization: basicAuth },
     content: postData,
   };
-  console.log('Requesting Spotify access token');
   return request(url, options);
 }
 
-async function getToken() {
-  if (!accessToken) {
-    console.log('Invalid Spotify access token');
-    try {
-      const {
-        access_token: token,
-        token_type: tokenType,
-        expires_in: expiresIn,
-      } = await requestTokenFromAPI();
-      console.log('Spotify access token received');
-      accessToken = `${tokenType} ${token}`;
-
-      // clear access token 60sec prior to expiration, to avoid race condition
-      setTimeout(() => {
-        accessToken = '';
-        console.log('Spotify access token has expired.');
-      }, (expiresIn - 60) * 1000);
-    } catch (e) {
-      throw new Error(`Failed to get Spotify access token: ${e}`);
-    }
+function getTokenPromise() {
+  if (!accessTokenPromise) {
+    console.log('No available access token. Requesting a new one...');
+    accessTokenPromise = requestTokenFromAPI()
+      .then(
+        ({
+          access_token: accessToken,
+          token_type: tokenType,
+          expires_in: expiresIn,
+        }) => {
+          // clear access token promise 60sec prior to expiration
+          setTimeout(() => {
+            accessTokenPromise = undefined;
+            console.log('Spotify access token has expired.');
+          }, (expiresIn - 60) * 1000);
+          return `${tokenType} ${accessToken}`;
+        }
+      )
+      .catch((e) => console.log('Access token request failed: ', e));
   }
-  return accessToken;
+  console.log('Returning access token promise');
+  return accessTokenPromise;
 }
 
-async function querySpotifyAPI(track) {
-  const token = await getToken();
+async function queryAPI(track) {
+  const token = await getTokenPromise();
   const url = new URL('https://api.spotify.com');
   url.pathname = '/v1/search';
   url.searchParams.set('type', 'track');
   url.searchParams.set('limit', 5);
   url.searchParams.set('offset', 0);
+  // TODO: inspect and handle potential double-quotes in terms
   url.searchParams.set(
     'q',
     `track:"${track.title}" album:"${track.album}" artist:"${track.artist}"`
   );
-  const options = {
-    headers: {
-      Authorization: token,
-    },
-  };
-  console.log('Submitting query request to Spotify API');
-  return request(url, options);
+  console.log('Querying Spotify API for: ', url.searchParams.get('q'));
+  return request(url, { headers: { Authorization: token } });
 }
 
 async function getTrack() {
   try {
-    const track = {
-      title: 'Feeling Good',
-      artist: 'Muse',
-      album: '',
-    };
     const {
       tracks: { items },
-    } = await querySpotifyAPI(track);
+    } = await queryAPI(track);
     console.log(`Received ${items.length} matches to query`);
-    // console.log(items);
     if (items.length) {
       const candidates = items.reduce((result, item) => {
         if (
-          (item.name === track.title &&
-          item.artists[0].name === track.artist)
-         &&
-           (track.album==='' || item.album.name === track.album)) {
-            result.push([item.name, item.album.name, item.uri]);
-          }
+          item.name === track.title &&
+          item.artists[0].name === track.artist &&
+          (track.album === '' || item.album.name === track.album)
+        ) {
+          result.push([item.name, item.album.name, item.uri]);
+        }
         return result;
       }, []);
       if (candidates.length > 1) {
@@ -99,3 +87,4 @@ async function getTrack() {
 }
 
 exports.getTrack = getTrack;
+exports.queryAPI = queryAPI;

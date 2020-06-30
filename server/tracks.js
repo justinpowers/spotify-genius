@@ -1,66 +1,76 @@
 const genius = require('./genius');
+const spotify = require('./spotify');
+
+// Honors phrasal searches denoted by double-quote bounded phrases
+// case-insensitive unless it is a phrasal search
+// As currently implemented, punctuation should be honored, including
+// double quotes within a set of double quotes. But this is not guaranteed
+//
+// The return value is the ratio of matching search terms to total search
+// terms, this is not total occurrences but simply boolean matches. This
+// will allow some degree of relevance sorting. I may later TODO: add a count
+// of match occurrences.
+//
+// Search currently does not consider word boundaries. A match can occur
+// within a word. TODO: Word boundaries will eventually be honored.
+function searchWithinLyrics(searchTerm, lyrics) {
+  console.log(searchTerm);
+  let terms = searchTerm.match(
+    /(?<=^|\s)"[^"]+"(?=\s|$)|(?<=^|\s)[^\s]+(?=\s|$)/g
+  );
+  terms = terms.map((term) =>
+    term.includes(' ') ? term.replace(/^"|"$/g, '') : term
+  );
+  console.log('Search terms: ', terms);
+
+  let containsTerms = 0;
+  terms.forEach((term) => {
+    if (
+      (term.includes(' ') && lyrics.includes(term)) ||
+      lyrics.toLowerCase().includes(term.toLowerCase())
+    ) {
+      containsTerms += 1;
+    }
+  });
+  return containsTerms / terms.length;
+}
 
 async function getTracks(params) {
-  // let tracks = [];
-  // let element;
   const searchTerm = params.get('lyrics');
-  let geniusCandidates;
+  let geniusPlusSpotifyCandidates;
 
   // get genius results
   if (params.has('lyrics')) {
-    const geniusQueryResults = await genius.queryAPI(searchTerm);
-    geniusCandidates = await Promise.all(
-      geniusQueryResults.map(
-        async ({
-          result: {
-            id,
-            title,
-            url,
-            primary_artist: { name: artist },
-          },
-        }) => {
-          const [album, lyrics] = await genius.scrapeHTML(url);
-          // Currently returns true only on case-INsensitive EXACT matches.
-          //   If the search term is wrapped in double-quotes, then it
-          //   simply (albeit counterintuitively) searches for the same
-          //   double-quotes within the lyrics. Likewise, it will not match
-          //   across new-lines and other white space. And it currently
-          //   does not consider word boundaries. Meaning it will match
-          //   within a word. Much of this will change in future iterations.
-          const hasLyricMatch = lyrics
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase());
-          return {
-            id,
-            title,
-            artist,
-            album,
-            url,
-            lyrics,
-            hasLyricMatch,
-          };
-        }
+    const geniusResults = await genius.queryAPI(searchTerm);
+
+    const geniusResultsExpandedAndFiltered = (
+      await Promise.all(
+        geniusResults.map(async (result) => {
+          const lyrics = await genius.getLyrics(result.url);
+          const album = await genius.getAlbum(result.url);
+          const matchRatio = searchWithinLyrics(searchTerm, lyrics);
+          return Object.assign(result, { album, lyrics, matchRatio });
+        })
       )
+    ).filter((result) => result.matchRatio >= 0);
+
+    geniusResultsExpandedAndFiltered.sort(
+      (a, b) => b.matchRatio - a.matchRatio
     );
 
-    // TODO: search spotify on filtered genius results
+    geniusPlusSpotifyCandidates = await Promise.all(
+      geniusResultsExpandedAndFiltered.map(async (geniusResult) => {
+        const spotifyQueryResults = await spotify.queryAPI(geniusResult);
+        return Object.assign(geniusResult, spotifyQueryResults);
+      })
+    );
+
+    console.log(geniusPlusSpotifyCandidates);
     // TODO: filter for best match
     // TODO: restructure for return to display
   }
 
-  geniusCandidates.forEach((gC) =>
-    console.log(
-      '[%s] #%s:\t%s - %s\nalbum: %s',
-      gC.hasLyricMatch,
-      gC.id,
-      gC.title,
-      gC.artist,
-      gC.album,
-    )
-  );
-  return geniusCandidates.filter(
-    (candidate) => candidate.hasLyricMatch === true
-  );
+  return geniusPlusSpotifyCandidates;
 }
 
 exports.getTracks = getTracks;
