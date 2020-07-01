@@ -1,3 +1,30 @@
 .Track {
   min-height: 1vh;
+  width: 100%;
+}
+
+li.Track {
+  padding: 10px;
+}
+
+li.Track .details {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+li.Track .title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+li.Track .artist {
+  font-size: .80rem;
+  font-weight: 500;
+}
+
+li.Track .album {
+  font-size: .75rem;
+  font-weight: 200;
 }

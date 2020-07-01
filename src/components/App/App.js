@@ -28,12 +28,12 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Spotify Genius!!!</h1>
+        <h1>Spotify Talks to a Genius</h1>
       </header>
       <main>
         <SearchBar onSearch={search} />
         <SearchResults searchResults={searchResults} />
-        <Playlist playlistTracks={playlistTracks} />
+        {/* <Playlist playlistTracks={playlistTracks} /> */}
       </main>
       <footer />
     </div>
