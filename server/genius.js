@@ -15,7 +15,7 @@ async function queryAPI(searchTerm) {
 
   let allHits = [];
   let page = 0;
-  let pages = 0;
+  let pagesReceived = 0;
   let hits;
   do {
     page += 1;
@@ -27,8 +27,8 @@ async function queryAPI(searchTerm) {
     } = await submitRequestToGeniusAPI(url));
     /* eslint-enable no-await-in-loop */
     allHits = allHits.concat(hits);
-    pages += 1;
-  } while (hits.length > 0 && pages <= 2);
+    pagesReceived += 1;
+  } while (hits.length > 0 && pagesReceived < 2);
 
   const parsedResults = parseQueryResults(allHits);
   return parsedResults;
@@ -56,7 +56,6 @@ function parseQueryResults(hits, props = ['id', 'title', 'artist', 'url']) {
 }
 
 const htmlCache = {};
-
 async function scrapeHTML(url, targets = ['album', 'lyrics']) {
   const targetClass = {
     album: '.song_album-info-title',

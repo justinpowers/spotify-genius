@@ -1,6 +1,29 @@
 const genius = require('./genius');
 const spotify = require('./spotify');
 
+// parses into individual words and double-quoted bound phrases
+const parsedSearchInput = {};
+function parseSearchInput(searchInput) {
+  if (!parsedSearchInput[searchInput]) {
+    console.log('Parsing search input: ', searchInput);
+    let terms = searchInput.match(
+      /(?<=^|\s)"[^"]+"(?=\s|$)|(?<=^|\s)[^\s]+(?=\s|$)/g
+    );
+    terms = terms.map((term) =>
+      term.includes(' ') ? term.replace(/^"|"$/g, '') : term
+    );
+    parsedSearchInput[searchInput] = terms;
+    console.log('Parsed search input: ', parsedSearchInput[searchInput]);
+
+    // delete entry from cache to free storage
+    setTimeout(() => {
+      console.log('Deleting parsed search input from cache: ', searchInput);
+      delete parsedSearchInput[searchInput];
+    }, 60 * 1000);
+  }
+  return parsedSearchInput[searchInput];
+}
+
 // Honors phrasal searches denoted by double-quote bounded phrases
 // case-insensitive unless it is a phrasal search
 // As currently implemented, punctuation should be honored, including
@@ -13,15 +36,8 @@ const spotify = require('./spotify');
 //
 // Search currently does not consider word boundaries. A match can occur
 // within a word. TODO: Word boundaries will eventually be honored.
-function searchWithinLyrics(searchTerm, lyrics) {
-  console.log(searchTerm);
-  let terms = searchTerm.match(
-    /(?<=^|\s)"[^"]+"(?=\s|$)|(?<=^|\s)[^\s]+(?=\s|$)/g
-  );
-  terms = terms.map((term) =>
-    term.includes(' ') ? term.replace(/^"|"$/g, '') : term
-  );
-  console.log('Search terms: ', terms);
+function searchWithinLyrics(searchInput, lyrics) {
+  const terms = parseSearchInput(searchInput);
 
   let containsTerms = 0;
   terms.forEach((term) => {
