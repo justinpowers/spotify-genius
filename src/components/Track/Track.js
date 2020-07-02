@@ -1,15 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Track.css';
+import defaultImage from './64x64_empty.png';
 
 function Track({ track }) {
-  const { title, artist, album } = track;
+  const { title, artist, album, image, releaseDate } =
+    track.spotify[0] || track;
+  const releaseYear = releaseDate ? releaseDate.slice(0, 4) : '';
   return (
     <li className="Track">
-      <div className="details">
-        <div className="title">{title}</div>
-        <div className="artist">{artist}</div>
-        <div className="album">{album}</div>
+      <div className="Art">
+        <img src={image || defaultImage} alt="track art" />
+      </div>
+      <div className="Details">
+        <div className="Title">{title}</div>
+        <div className="Artist">{artist}</div>
+        <div className="AlbumAndYear">
+          {album}, {releaseYear}
+        </div>
       </div>
     </li>
   );

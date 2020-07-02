@@ -34,12 +34,13 @@ async function queryAPI(searchTerm) {
   return parsedResults;
 }
 
-function parseQueryResults(hits, props = ['id', 'title', 'artist', 'url']) {
+function parseQueryResults(hits, props = ['id', 'title', 'artist', 'url', 'lyricsState']) {
   const apiProps = {
     id: 'id',
     title: 'title',
     artist: 'primary_artist.name',
     url: 'url',
+    lyricsState: 'lyrics_state',
   };
 
   return hits.map((hit) => {

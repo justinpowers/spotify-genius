@@ -5,26 +5,36 @@
 
 li.Track {
   padding: 10px;
+  display: flex;
+  flex-direction: row;
 }
 
-li.Track .details {
+li.Track .Art {
+  padding: 0 10px;
+}
+
+li.Track .Art img {
+  src: url('./64x64_empty.png');
+}
+
+li.Track .Details {
   text-align: left;
-  display: flex;
+  display: flex; 
   flex-direction: column;
   flex-wrap: wrap;
 }
 
-li.Track .title {
+li.Track .Title {
   font-size: 1.1rem;
   font-weight: 600;
 }
 
-li.Track .artist {
+li.Track .Artist {
   font-size: .80rem;
   font-weight: 500;
 }
 
-li.Track .album {
+li.Track .AlbumAndYear {
   font-size: .75rem;
   font-weight: 200;
 }

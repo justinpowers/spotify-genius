@@ -55,7 +55,48 @@ async function queryAPI(track) {
     `track:"${track.title}" album:"${track.album}" artist:"${track.artist}"`
   );
   console.log('Querying Spotify API for: ', url.searchParams.get('q'));
-  return request(url, { headers: { Authorization: token } });
+  const {
+    tracks: { items },
+  } = await request(url, { headers: { Authorization: token } });
+  const parsedResults = parseQueryResults(items);
+  return parsedResults;
+}
+
+function parseQueryResults(
+  items,
+  props = [
+    'id',
+    'title',
+    'artist',
+    'album',
+    'releaseDate',
+    'explicit',
+    'image',
+    'uri',
+  ]
+) {
+  const apiProps = {
+    id: 'id',
+    title: 'name',
+    artist: 'artists[0].name',
+    album: 'album.name',
+    releaseDate: 'album.release_date',
+    explicit: 'explicit',
+    image: 'album.images[2].url',
+    uri: 'uri',
+  };
+
+  return items.map((item) => {
+    const extractedData = {};
+    props.forEach((prop) => {
+      if (apiProps[prop]) {
+        extractedData[prop] = eval(`item.${apiProps[prop]}`);
+      } else {
+        extractedData[prop] = '';
+      }
+    });
+    return extractedData;
+  });
 }
 
 async function getTrack() {

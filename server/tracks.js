@@ -77,7 +77,8 @@ async function getTracks(params) {
     geniusPlusSpotifyCandidates = await Promise.all(
       geniusResultsExpandedAndFiltered.map(async (geniusResult) => {
         const spotifyQueryResults = await spotify.queryAPI(geniusResult);
-        return Object.assign(geniusResult, spotifyQueryResults);
+
+        return Object.assign(geniusResult, { spotify: spotifyQueryResults });
       })
     );
 
