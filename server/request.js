@@ -72,6 +72,7 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
     });
 
     req.on('error', (e) => {
+      console.log('I AM HERE ****************************');
       return reject(e);
     });
 

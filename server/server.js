@@ -27,15 +27,23 @@ const server = http.createServer(async (req, res) => {
     console.log(`Incoming ${method} request for ${url}`);
     console.log(' Headers: ', req.headers);
 
-    // I'm not a big fan of this nested-if method, but...
     let body = '';
     if (route in routes) {
       const { methods } = routes[route];
       if (method in methods || (method === 'HEAD' && 'GET' in methods)) {
         const { handler } = methods[method];
-        const results = await handler(url.searchParams);
-        // COUPLING!: assumes json
-        body = JSON.stringify(results);
+        try {
+          const results = await handler(url.searchParams);
+          body = JSON.stringify(results);
+          res.statusCode = 200;
+          res.statusMessage = 'Ok';
+        } catch (e) {
+          console.log(e);
+          res.statusCode = 400;
+          res.statusMessage = 'Bad Request';
+          res.setHeader('Content-Type', 'text/html');
+          body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
+        }
       } else {
         res.statusCode = 405;
         res.statusMessage = 'Bad Method';
