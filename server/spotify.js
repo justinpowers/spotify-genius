@@ -42,6 +42,50 @@ function getTokenPromise() {
   return accessTokenPromise;
 }
 
+
+
+async function getTracksById(trackIds) {
+  console.log(trackIds.length);
+  if (trackIds.length === 0) {
+    return {};
+  }
+  const ids = trackIds;
+  // break up tracks into arrays of 50
+  // create an array of arrays of max size 50
+  const idsPerRequest = [];
+  while (ids.length > 50) {
+    idsPerRequest.push(ids.splice(0, 50));
+  }
+  idsPerRequest.push(ids.splice(0));
+  console.log(idsPerRequest);
+
+  const token = await getTokenPromise();
+  const url = new URL('https://api.spotify.com');
+  url.pathname = 'v1/tracks';
+
+  // promiseall map this array with requests
+  const tracks = (
+    await Promise.all(
+      idsPerRequest.map(async (requestIds) => {
+        url.searchParams.set('ids', requestIds);
+        const t = await request(url, {
+          headers: { Authorization: token },
+        });
+        return t.tracks;
+      })
+    )
+  ).flat();
+
+  const parsedTracks = parseQueryResults(tracks);
+
+  const tracksById = {};
+  parsedTracks.forEach((track) => {
+    tracksById[track.id] = track;
+  });
+  console.log(tracksById);
+  return tracksById;
+}
+
 async function queryAPI(track) {
   const token = await getTokenPromise();
   const url = new URL('https://api.spotify.com');
@@ -50,9 +94,15 @@ async function queryAPI(track) {
   url.searchParams.set('limit', 5);
   url.searchParams.set('offset', 0);
   // TODO: inspect and handle potential double-quotes in terms
+  let q = '';
+  q += track.title ? `track:"${track.title}"` : '';
+  q += track.album ? ` album:"${track.album}"` : '';
+  q += track.artist ? ` artist:"${track.artist}"` : '';
+
   url.searchParams.set(
     'q',
-    `track:"${track.title}" album:"${track.album}" artist:"${track.artist}"`
+   // `track:"${track.title}" album:"${track.album}" artist:"${track.artist}"`
+    q
   );
   console.log('Querying Spotify API for: ', url.searchParams.get('q'));
   const {
@@ -129,3 +179,4 @@ async function getTrack() {
 
 exports.getTrack = getTrack;
 exports.queryAPI = queryAPI;
+exports.getTracksById = getTracksById;

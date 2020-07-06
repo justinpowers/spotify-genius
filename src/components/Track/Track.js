@@ -5,7 +5,7 @@ import defaultImage from './64x64_empty.png';
 
 function Track({ track }) {
   const { title, artist, album, image, releaseDate } =
-    track.spotify[0] || track;
+    track.spotify[0] || track.genius;
   const releaseYear = releaseDate ? releaseDate.slice(0, 4) : '';
   return (
     <li className="Track">

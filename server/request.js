@@ -72,7 +72,8 @@ function request(url, { method = 'GET', headers = {}, content = null } = {}) {
     });
 
     req.on('error', (e) => {
-      return reject(e);
+      console.log('Request failed for: ', req.path);
+      return reject(new Error('Request failed for: ', req.path, e));
     });
 
     req.end(body);

@@ -19,7 +19,7 @@ function App() {
         const response = await fetch(url);
         results = await response.json();
       } catch (error) {
-        console.log(error);
+        console.log('***This is the error: ', error);
       }
     }
     setSearchResults(results);

@@ -13,28 +13,32 @@ async function queryAPI(searchTerm) {
   url.searchParams.set('q', searchTerm);
   url.searchParams.set('per_page', 20);
 
-  let allHits = [];
-  let page = 0;
-  let pagesReceived = 0;
-  let hits;
-  do {
-    page += 1;
-    url.searchParams.set('page', page);
-    console.log('Getting page: ', page);
-    /* eslint-disable no-await-in-loop */
-    ({
-      response: { hits },
-    } = await submitRequestToGeniusAPI(url));
-    /* eslint-enable no-await-in-loop */
-    allHits = allHits.concat(hits);
-    pagesReceived += 1;
-  } while (hits.length > 0 && pagesReceived < 2);
+  const maxPages = 3;
+  const pages = [];
+  for (let page = 1; page <= maxPages; page += 1) {
+    pages.push(page);
+  }
 
-  const parsedResults = parseQueryResults(allHits);
+  const allResults = await Promise.all(
+    pages.map(async (page) => {
+      url.searchParams.set('page', page);
+      const {
+        response: { hits },
+      } = await submitRequestToGeniusAPI(url);
+      return hits;
+    })
+  ).then((hits) => hits.flat());
+  // console.log('Original Genius: ', allResults);
+
+  const parsedResults = parseQueryResults(allResults);
+  // console.log('Parsed Genius: ', parsedResults);
   return parsedResults;
 }
 
-function parseQueryResults(hits, props = ['id', 'title', 'artist', 'url', 'lyricsState']) {
+function parseQueryResults(
+  hits,
+  props = ['id', 'title', 'artist', 'url', 'lyricsState']
+) {
   const apiProps = {
     id: 'id',
     title: 'title',
@@ -63,22 +67,42 @@ async function scrapeHTML(url, targets = ['album', 'lyrics']) {
     lyrics: '.lyrics',
   };
 
-  let html;
-  if (htmlCache[url]) {
-    console.log(`Using cached html for url: ${url}`);
-    html = htmlCache[url];
-  } else {
-    html = await request(url);
-    console.log(`Caching html for url: ${url}`);
-    htmlCache[url] = html;
+  if (!htmlCache[url]) {
+    htmlCache[url] = await request(url);
     setTimeout(() => {
       delete htmlCache[url];
-      console.log(`Deleting cached html for url: ${url}`);
     }, 5 * 60 * 1000);
   }
 
-  const $ = cheerio.load(html);
-  return targets.map((target) => $(targetClass[target]).text().trim());
+  const $ = cheerio.load(htmlCache[url]);
+
+  const results = [];
+
+  targets.forEach((target) => {
+    if (targetClass[target]) {
+      results.push($(targetClass[target]).text().trim());
+    }
+  });
+
+  if (targets.includes('spotifyId')) {
+    const spotifyIdRegEx = /"spotify_uuid":"([^"]+)"/;
+    const match = spotifyIdRegEx.exec(
+      $("meta[itemprop='page_data']").attr('content')
+    );
+    const spotifyId = match != null ? match[1] : '';
+    results.push(spotifyId);
+  }
+
+  if (targets.includes('primaryTag')) {
+    const primaryTagRegEx = /{"key":"Primary Tag","value":"([^"]+)"}/;
+    const match = primaryTagRegEx.exec(
+      $("meta[itemprop='page_data']").attr('content')
+    );
+    const primaryTagId = match != null ? match[1] : '';
+    results.push(primaryTagId);
+  }
+
+  return results;
 }
 
 async function getAlbum(url) {
@@ -91,7 +115,21 @@ async function getLyrics(url) {
   return lyrics;
 }
 
-exports.getAlbum = getAlbum;
-exports.getLyrics = getLyrics;
-exports.queryAPI = queryAPI;
-exports.scrapeHTML = scrapeHTML;
+async function getSpotifyId(url) {
+  const [spotifyId] = await scrapeHTML(url, ['spotifyId']);
+  return spotifyId;
+}
+
+async function getPrimaryTag(url) {
+  const [primaryTag] = await scrapeHTML(url, ['primaryTag']);
+  return primaryTag;
+}
+
+module.exports = {
+  getAlbum,
+  getLyrics,
+  getSpotifyId,
+  getPrimaryTag,
+  queryAPI,
+  scrapeHTML,
+};

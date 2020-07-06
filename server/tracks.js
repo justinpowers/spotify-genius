@@ -53,41 +53,82 @@ function searchWithinLyrics(searchInput, lyrics) {
 
 async function getTracks(params) {
   const searchTerm = params.get('lyrics');
-  let geniusPlusSpotifyCandidates;
 
-  // get genius results
-  if (params.has('lyrics')) {
-    const geniusResults = await genius.queryAPI(searchTerm);
-
-    const geniusResultsExpandedAndFiltered = (
-      await Promise.all(
-        geniusResults.map(async (result) => {
-          const lyrics = await genius.getLyrics(result.url);
-          const album = await genius.getAlbum(result.url);
-          const matchRatio = searchWithinLyrics(searchTerm, lyrics);
-          return Object.assign(result, { album, lyrics, matchRatio });
-        })
-      )
-    ).filter((result) => result.matchRatio >= 0);
-
-    geniusResultsExpandedAndFiltered.sort(
-      (a, b) => b.matchRatio - a.matchRatio
-    );
-
-    geniusPlusSpotifyCandidates = await Promise.all(
-      geniusResultsExpandedAndFiltered.map(async (geniusResult) => {
-        const spotifyQueryResults = await spotify.queryAPI(geniusResult);
-
-        return Object.assign(geniusResult, { spotify: spotifyQueryResults });
-      })
-    );
-
-    console.log(geniusPlusSpotifyCandidates);
-    // TODO: filter for best match
-    // TODO: restructure for return to display
+  if (!params.has('lyrics')) {
+    throw new Error('Missing query parameter');
   }
 
-  return geniusPlusSpotifyCandidates;
+  const geniusResults = await genius.queryAPI(searchTerm);
+
+  const geniusTracks = (
+    await Promise.all(
+      geniusResults
+        .filter(({ lyricsState }) => lyricsState === 'complete')
+        .map(async (result) => {
+          const { url } = result;
+          const lyrics = await genius.getLyrics(url);
+          const album = await genius.getAlbum(url);
+          const spotifyId = await genius.getSpotifyId(url);
+          const primaryTag = await genius.getPrimaryTag(url);
+          const matchRatio = searchWithinLyrics(searchTerm, lyrics);
+          return {
+            ...result,
+            album,
+            lyrics,
+            matchRatio,
+            spotifyId,
+            primaryTag,
+          };
+        })
+    )
+  )
+    .filter(
+      ({ matchRatio, primaryTag }) =>
+        matchRatio > 0 && primaryTag != 'non-music'
+    )
+    .sort((a, b) => b.matchRatio - a.matchRatio);
+
+  // collect spotifyIds above
+  // submit array of ids to spotify getTracks function
+  //   the result should be mapped to an object using the same-ordered spotifyId array and using that id as the property
+  const spotifyIds = geniusTracks.flatMap(({ spotifyId }) =>
+    spotifyId ? [spotifyId] : []
+  );
+
+  const spotifyTracksById =
+    spotifyIds.length > 0 ? await spotify.getTracksById(spotifyIds) : {};
+
+  let spotifyTracks = [];
+  const tracks = (
+    await Promise.all(
+      geniusTracks.map(async (geniusTrack, index) => {
+        if (geniusTrack.spotifyId) {
+          spotifyTracks = [spotifyTracksById[geniusTrack.spotifyId]];
+          // add track to an array that will be sent as one request
+          // the response will contain the requested tracks in the same order
+          // as sent in the request, with nulls for unfound tracks.
+          // utilize this to quickly match up the tracks
+        } else {
+          spotifyTracks = await spotify.queryAPI(geniusTrack);
+          //  if (spotifyTracks.length === 0) {
+          // remove album from query
+          // spotifyTracks = await spotify.queryAPI(geniusTrack w/o album);
+          //  }
+        }
+        return {
+          ...{ id: index },
+          genius: geniusTrack,
+          spotify: spotifyTracks,
+        };
+      })
+    )
+  ).filter(({ spotify }) => spotify.length > 0);
+
+  console.log('tracks: ', tracks);
+  // TODO: filter for best match
+  // TODO: restructure for return to display
+
+  return tracks;
 }
 
 exports.getTracks = getTracks;
