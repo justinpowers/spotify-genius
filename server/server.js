@@ -1,69 +1,85 @@
 require('../utils/envvar').load();
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const tracks = require('./tracks');
 
-// not a fan of this structure, but it works for now.
-//   probably should move this data into the imported file
-//   also, remove error-prone redundant head/get handler declaration
-const routes = {
-  '/tracks': {
-    methods: {
-      HEAD: {
-        handler: tracks.getTracks,
-      },
-      GET: {
-        handler: tracks.getTracks,
-      },
-    },
-  },
-};
+function getMimeTypeFromExtName(fileName) {
+  const mimeTypes = {
+    '.html': 'text/html',
+    '.css': 'text/css',
+    '.js': 'text/javascript',
+    '.json': 'application/json',
+    '.png': 'image/png',
+  };
+  return mimeTypes[path.extname(fileName)] || 'application/octet-stream';
+}
 
 const server = http.createServer(async (req, res) => {
-  try {
-    const { method, headers } = req;
-    const url = new URL(req.url, `http://${headers.host}`);
-    const route = url.pathname;
+  const { method, headers } = req;
+  const url = new URL(req.url, `http://${headers.host}`);
 
-    console.log(`Incoming ${method} request for ${url}`);
-    console.log(' Headers: ', req.headers);
+  console.log(`Incoming ${method} request for ${url}`);
+  console.log(' Headers: ', req.headers);
 
-    let body = '';
-    if (route in routes) {
-      const { methods } = routes[route];
-      if (method in methods || (method === 'HEAD' && 'GET' in methods)) {
-        const { handler } = methods[method];
-        try {
-          const results = await handler(url.searchParams);
-          body = JSON.stringify(results);
-          res.statusCode = 200;
-          res.statusMessage = 'Ok';
-        } catch (e) {
-          console.log(e);
-          res.statusCode = 400;
-          res.statusMessage = 'Bad Request';
-          res.setHeader('Content-Type', 'text/html');
-          body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
-        }
+  let body = '';
+  let contentType = 'application/octet-stream';
+
+  if (url.pathname === '/tracks') {
+    if (method === 'GET' || method === 'HEAD') {
+      res.statusCode = 200;
+      contentType = 'application/json';
+      const results = await tracks.getTracks(url.searchParams);
+      body = JSON.stringify(results);
+    } else {
+      res.statusCode = 405;
+      res.setHeader('Allow', 'HEAD, GET');
+    }
+  } else {
+    const baseDir = './build';
+    const filePath =
+      baseDir + (url.pathname === '/' ? '/index.html' : url.pathname);
+    try {
+      fs.accessSync(filePath, fs.constants.R_OK);
+      if (method === 'GET' || method === 'HEAD') {
+        res.statusCode = 200;
+        contentType = getMimeTypeFromExtName(filePath);
+        const data = await fs.promises.readFile(filePath, 'utf8');
+        body = contentType === 'application/json' ? JSON.stringify(data) : data;
       } else {
         res.statusCode = 405;
-        res.statusMessage = 'Bad Method';
-        res.setHeader('Allow', Object.keys(methods).join(', '));
-        res.setHeader('Content-Type', 'text/html');
-        body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
+        res.setHeader('Allow', 'HEAD, GET');
       }
-    } else {
-      res.statusCode = 404;
-      res.statusMessage = 'Not Found';
-      res.setHeader('Content-Type', 'text/html');
-      body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        console.log(`Could not read ${url.pathname}`, e);
+        res.statusCode = 404;
+      } else {
+        console.log(`Unexpected error during response: `, e);
+        res.statusCode = 500;
+      }
     }
-
-    res.setHeader('Content-Length', Buffer.byteLength(body));
-    res.writeHead(res.statusCode);
-    res.end(body);
-  } catch (error) {
-    console.log(error);
   }
+
+  const statusMessages = {
+    200: 'OK',
+    400: 'Bad Request',
+    404: 'Not Found',
+    405: 'Bad Method',
+    500: 'Internal Server Error',
+  };
+  res.statusMessage = statusMessages[res.statusCode];
+
+  if (res.statusCode >= 400) {
+    body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
+    contentType = 'text/html';
+  }
+
+  res.writeHead(res.statusCode, {
+    'Content-Length': Buffer.byteLength(body),
+    'Content-Type': contentType,
+  });
+  res.end(body);
 });
 
 const host = process.env.SERVER_HOST;

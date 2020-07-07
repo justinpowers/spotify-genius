@@ -55,7 +55,7 @@ async function getTracks(params) {
   const searchTerm = params.get('lyrics');
 
   if (!params.has('lyrics')) {
-    throw new Error('Missing query parameter');
+    return [];
   }
 
   const geniusResults = await genius.queryAPI(searchTerm);
