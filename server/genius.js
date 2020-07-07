@@ -67,11 +67,17 @@ async function scrapeHTML(url, targets = ['album', 'lyrics']) {
     lyrics: '.lyrics',
   };
 
-  if (!htmlCache[url]) {
-    htmlCache[url] = await request(url);
-    setTimeout(() => {
-      delete htmlCache[url];
-    }, 5 * 60 * 1000);
+  let attempts = 0;
+  while (!htmlCache[url] && attempts < 2) {
+    try {
+      attempts += 1;
+      htmlCache[url] = await request(url);
+      setTimeout(() => {
+        delete htmlCache[url];
+      }, 5 * 60 * 1000);
+    } catch (e) {
+      console.log('Failed %s attempts to get html for %s', attempts, url);
+    }
   }
 
   const $ = cheerio.load(htmlCache[url]);

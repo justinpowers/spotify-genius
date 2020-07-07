@@ -42,8 +42,6 @@ function getTokenPromise() {
   return accessTokenPromise;
 }
 
-
-
 async function getTracksById(trackIds) {
   console.log(trackIds.length);
   if (trackIds.length === 0) {
@@ -99,16 +97,17 @@ async function queryAPI(track) {
   q += track.album ? ` album:"${track.album}"` : '';
   q += track.artist ? ` artist:"${track.artist}"` : '';
 
-  url.searchParams.set(
-    'q',
-   // `track:"${track.title}" album:"${track.album}" artist:"${track.artist}"`
-    q
-  );
+  url.searchParams.set('q', q);
   console.log('Querying Spotify API for: ', url.searchParams.get('q'));
-  const {
-    tracks: { items },
-  } = await request(url, { headers: { Authorization: token } });
-  const parsedResults = parseQueryResults(items);
+  let parsedResults = {};
+  try {
+    const {
+      tracks: { items },
+    } = await request(url, { headers: { Authorization: token } });
+    parsedResults = parseQueryResults(items);
+  } catch (e) {
+    console.log('Failed to get: ', url);
+  }
   return parsedResults;
 }
 
@@ -148,6 +147,7 @@ function parseQueryResults(
     return extractedData;
   });
 }
+/*
 
 async function getTrack() {
   try {
@@ -178,5 +178,7 @@ async function getTrack() {
 }
 
 exports.getTrack = getTrack;
+*/
+
 exports.queryAPI = queryAPI;
 exports.getTracksById = getTracksById;
