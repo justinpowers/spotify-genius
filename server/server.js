@@ -17,7 +17,7 @@ function getMimeTypeFromExtName(fileName) {
 
 const server = http.createServer(async (req, res) => {
   const { method, headers } = req;
-  const url = new URL(req.url, `http://${headers.host}`);
+  const url = new URL(req.url); // , `http://${headers.host}`);
 
   console.log(`Incoming ${method} request for ${url}`);
   console.log(' Headers: ', req.headers);
@@ -25,6 +25,7 @@ const server = http.createServer(async (req, res) => {
   let body = '';
   let contentType = 'application/octet-stream';
 
+  console.log(url.pathname);
   if (url.pathname === '/tracks') {
     if (method === 'GET' || method === 'HEAD') {
       res.statusCode = 200;

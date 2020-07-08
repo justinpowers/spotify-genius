@@ -11,7 +11,12 @@ function App() {
   const search = async (searchTerm) => {
     let results = [];
     if (searchTerm) {
-      const url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
+      let url;
+      if (process.env.NODE_ENV !== 'production') {
+        url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
+      } else {
+        url = new URL(`http://justinpowe.rs/spotify-talks-to-a-genius`);
+      }
       url.pathname = '/tracks';
       url.searchParams.set('lyrics', searchTerm);
       console.log(url);
