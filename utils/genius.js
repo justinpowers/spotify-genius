@@ -67,75 +67,53 @@ async function scrapeHTML(url, targets = ['album', 'lyrics']) {
     lyrics: '.lyrics',
   };
 
-  let attempts = 0;
-  while (!htmlCache[url] && attempts < 2) {
-    try {
-      attempts += 1;
-      htmlCache[url] = await request(url);
-      setTimeout(() => {
-        delete htmlCache[url];
-      }, 5 * 60 * 1000);
-    } catch (e) {
-      console.log('Failed %s attempts to get html for %s', attempts, url);
-    }
+  let html;
+  try {
+    html = await request(url);
+  } catch (e) {
+    console.log('Failed to get html for %s', url);
+    throw e;
   }
 
-  const $ = cheerio.load(htmlCache[url]);
+  const $ = cheerio.load(html);
 
-  const results = [];
+  let album = '';
+  if (targets.includes('album')) {
+    album = $(targetClass.album).text().trim();
+  }
 
-  targets.forEach((target) => {
-    if (targetClass[target]) {
-      results.push($(targetClass[target]).text().trim());
-    }
-  });
+  let lyrics = '';
+  if (targets.includes('lyrics')) {
+    lyrics = $(targetClass.lyrics).text().trim();
+  }
 
+  let spotifyId;
   if (targets.includes('spotifyId')) {
     const spotifyIdRegEx = /"spotify_uuid":"([^"]+)"/;
     const match = spotifyIdRegEx.exec(
       $("meta[itemprop='page_data']").attr('content')
     );
-    const spotifyId = match != null ? match[1] : '';
-    results.push(spotifyId);
+    spotifyId = match != null ? match[1] : '';
   }
 
+  let primaryTag;
   if (targets.includes('primaryTag')) {
     const primaryTagRegEx = /{"key":"Primary Tag","value":"([^"]+)"}/;
     const match = primaryTagRegEx.exec(
       $("meta[itemprop='page_data']").attr('content')
     );
-    const primaryTagId = match != null ? match[1] : '';
-    results.push(primaryTagId);
+    primaryTag = match != null ? match[1] : '';
   }
 
-  return results;
+  return [album, lyrics, spotifyId, primaryTag];
 }
 
-async function getAlbum(url) {
-  const [album] = await scrapeHTML(url, ['album']);
-  return album;
-}
-
-async function getLyrics(url) {
-  const [lyrics] = await scrapeHTML(url, ['lyrics']);
-  return lyrics;
-}
-
-async function getSpotifyId(url) {
-  const [spotifyId] = await scrapeHTML(url, ['spotifyId']);
-  return spotifyId;
-}
-
-async function getPrimaryTag(url) {
-  const [primaryTag] = await scrapeHTML(url, ['primaryTag']);
-  return primaryTag;
+async function getDetails(url) {
+  return scrapeHTML(url, ['album', 'lyrics', 'spotifyId', 'primaryTag']);
 }
 
 module.exports = {
-  getAlbum,
-  getLyrics,
-  getSpotifyId,
-  getPrimaryTag,
+  getDetails,
   queryAPI,
   scrapeHTML,
 };

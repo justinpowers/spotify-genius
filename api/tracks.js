@@ -66,10 +66,12 @@ async function getTracks(params) {
         .filter(({ lyricsState }) => lyricsState === 'complete')
         .map(async (result) => {
           const { url } = result;
-          const lyrics = await genius.getLyrics(url);
-          const album = await genius.getAlbum(url);
-          const spotifyId = await genius.getSpotifyId(url);
-          const primaryTag = await genius.getPrimaryTag(url);
+          const [
+            album,
+            lyrics,
+            spotifyId,
+            primaryTag,
+          ] = await genius.getDetails(url);
           const matchRatio = searchWithinLyrics(searchTerm, lyrics);
           return {
             ...result,
@@ -124,7 +126,7 @@ async function getTracks(params) {
     )
   ).filter(({ spotify }) => spotify.length > 0);
 
-  console.log('tracks: ', tracks);
+  // console.log(`tracks: ${tracks.spotify.title}`);
   // TODO: filter for best match
   // TODO: restructure for return to display
 
