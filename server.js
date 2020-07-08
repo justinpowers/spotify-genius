@@ -1,8 +1,8 @@
-require('../utils/envvar').load();
+require('./utils/envvar').load();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const tracks = require('./tracks');
+const tracks = require('./api/tracks');
 
 function getMimeTypeFromExtName(fileName) {
   const mimeTypes = {
@@ -17,7 +17,7 @@ function getMimeTypeFromExtName(fileName) {
 
 const server = http.createServer(async (req, res) => {
   const { method, headers } = req;
-  const url = new URL(req.url); // , `http://${headers.host}`);
+  const url = new URL(req.url, `http://${headers.host}`);
 
   console.log(`Incoming ${method} request for ${url}`);
   console.log(' Headers: ', req.headers);
@@ -26,40 +26,52 @@ const server = http.createServer(async (req, res) => {
   let contentType = 'application/octet-stream';
 
   console.log(url.pathname);
-  if (url.pathname === '/tracks') {
-    if (method === 'GET' || method === 'HEAD') {
-      res.statusCode = 200;
-      contentType = 'application/json';
-      const results = await tracks.getTracks(url.searchParams);
-      body = JSON.stringify(results);
-    } else {
-      res.statusCode = 405;
-      res.setHeader('Allow', 'HEAD, GET');
-    }
-  } else {
-    const baseDir = './build';
-    const filePath =
-      baseDir + (url.pathname === '/' ? '/index.html' : url.pathname);
-    try {
-      fs.accessSync(filePath, fs.constants.R_OK);
+
+  const baseDir = '/spotify-talks-to-a-genius';
+  const {
+    groups: { base, file },
+  } = url.pathname.match(/^(?<base>\/[^\/]*)(?<file>\/.*)?/);
+  console.log(base, file);
+  if (base === baseDir) {
+    if (file === '/tracks') {
       if (method === 'GET' || method === 'HEAD') {
         res.statusCode = 200;
-        contentType = getMimeTypeFromExtName(filePath);
-        const data = await fs.promises.readFile(filePath, 'utf8');
-        body = contentType === 'application/json' ? JSON.stringify(data) : data;
+        contentType = 'application/json';
+        const results = await tracks.getTracks(url.searchParams);
+        body = JSON.stringify(results);
       } else {
         res.statusCode = 405;
         res.setHeader('Allow', 'HEAD, GET');
       }
-    } catch (e) {
-      if (e.code === 'ENOENT') {
-        console.log(`Could not read ${url.pathname}`, e);
-        res.statusCode = 404;
-      } else {
-        console.log(`Unexpected error during response: `, e);
-        res.statusCode = 500;
+    } else {
+      const buildDir = './build';
+      const filePath =
+        !file || file === '/' ? `${buildDir}/index.html` : `${buildDir}${file}`;
+      console.log(filePath);
+      try {
+        fs.accessSync(filePath, fs.constants.R_OK);
+        if (method === 'GET' || method === 'HEAD') {
+          res.statusCode = 200;
+          contentType = getMimeTypeFromExtName(filePath);
+          const data = await fs.promises.readFile(filePath, 'utf8');
+          body =
+            contentType === 'application/json' ? JSON.stringify(data) : data;
+        } else {
+          res.statusCode = 405;
+          res.setHeader('Allow', 'HEAD, GET');
+        }
+      } catch (e) {
+        if (e.code === 'ENOENT') {
+          console.log(`Could not read ${url.pathname}`, e);
+          res.statusCode = 404;
+        } else {
+          console.log(`Unexpected error during response: `, e);
+          res.statusCode = 500;
+        }
       }
     }
+  } else {
+    res.statusCode = 404;
   }
 
   const statusMessages = {

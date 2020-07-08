@@ -13,7 +13,7 @@ async function queryAPI(searchTerm) {
   url.searchParams.set('q', searchTerm);
   url.searchParams.set('per_page', 20);
 
-  const maxPages = 3;
+  const maxPages = 2;
   const pages = [];
   for (let page = 1; page <= maxPages; page += 1) {
     pages.push(page);

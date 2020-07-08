@@ -15,9 +15,9 @@ function App() {
       if (process.env.NODE_ENV !== 'production') {
         url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
       } else {
-        url = new URL(`http://justinpowe.rs/spotify-talks-to-a-genius`);
+        url = new URL(`http://justinpowe.rs`);
       }
-      url.pathname = '/tracks';
+      url.pathname = '/spotify-talks-to-a-genius/tracks';
       url.searchParams.set('lyrics', searchTerm);
       console.log(url);
       try {

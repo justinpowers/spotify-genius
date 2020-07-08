@@ -1,5 +1,5 @@
-const genius = require('./genius');
-const spotify = require('./spotify');
+const genius = require('../utils/genius');
+const spotify = require('../utils/spotify');
 
 // parses into individual words and double-quoted bound phrases
 const parsedSearchInput = {};
