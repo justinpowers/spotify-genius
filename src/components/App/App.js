@@ -11,20 +11,19 @@ function App() {
   const search = async (searchTerm) => {
     let results = [];
     if (searchTerm) {
-      let url;
-      if (process.env.NODE_ENV === 'production') {
-        url = new URL(`http://${process.env.REACT_APP_PROD_SERVER}`);
-      } else {
-        url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
-      }
+      const serverIP =
+        process.env.NODE_ENV === 'production'
+          ? process.env.REACT_APP_PROD_SERVER
+          : process.env.REACT_APP_PROXY_URL;
+      const url = new URL(`http://${serverIP}`);
       url.pathname = '/spotify-talks-to-a-genius/tracks';
       url.searchParams.set('lyrics', searchTerm);
-      console.log(url);
       try {
+        console.log(url);
         const response = await fetch(url);
         results = await response.json();
-      } catch (error) {
-        console.log('***This is the error: ', error);
+      } catch (e) {
+        console.log('Failed to fetch: ', url, e);
       }
     }
     setSearchResults(results);
