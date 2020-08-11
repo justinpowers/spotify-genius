@@ -16,6 +16,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
+*.swo
 *.swp
 
 npm-debug.log*
@@ -23,3 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 
 README.create-react-app
+
+# lsp
+/.log
+
