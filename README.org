@@ -2,15 +2,16 @@
 
 * Spotify Talks to a Genius
 ** Quick Description
-An engine that searches the [[https://www.genius.com][Genius]] database for [[http://www.spotify.com][Spotify]]-playable tracks whose lyrics contain the search term.
+An engine that searches the [[https://www.genius.com][Genius]] database for [[http://www.spotify.com][Spotify]]-playable tracks whose lyrics contain the user-submitted search term.
 
 ** Background
-This project began as simply a means for learning and exploration. I had been trying to find a project that would allow me to practice my Javascript/React frontend skills while utilyzing an external API. I settled on using the Spotify API because of its high-quality and the simple, familiar context (music!).
+This project began as simply a means for learning and exploration. I had been trying to find a project that would allow me to practice my Javascript/React frontend skills while utilizing an external API. I settled on playing with the Spotify API because of its high-quality docs and the simple, familiar context (music!).
 
-Spotify provides quite a bit of built-in functionality via its API, but it does not offer the ability to search for tracks by lyrics. I figured I could use the Genius API in conjunction with the Spotify API to create an online tool to fill this gap.
+Spotify provides quite a bit of built-in functionality via its API, but it does not offer the ability to search for tracks by lyrics. I figured I could easily use the Genius API in conjunction with the Spotify API to create an online tool to fill this gap. I was mistaken.
 
-I initially expected to create an SPA, but upon further investigation into the Genius API, I realized that there was one major limitation: their API does not permit the searching of lyrics. In fact, it seems that Genius had moved from being focused on lyrics in particular to being focused on document-annotation in general. And therefore, the API revolved around annotations. (Part of the reason for this seems to be copyright-related, which has further implications for this project as well.) Without API functions to search the lyrics, I would have to scrape the html. This meant that I could not rely on an SPA structure due to CORS restrictions. So...I had to use a server-side functions to implement the html scraping.
+Initially expecting to create an SPA, I was disappointed to learn that the Genius API had (at least) one major limitation: their API does not permit the searching of lyrics. (In fact, it seems that Genius had moved from being focused on lyrics in particular to being focused on document-annotation in general. And therefore, the API revolved around annotations. Part of the reason for this seems to be copyright-related, which has further implications for this project as well.) Without  API calls to search the lyrics, I would have to scrape the html. This meant that I could not rely on an SPA structure due to CORS restrictions. So...I had to use a server-side functions to implement the html scraping. Ok, that was fine, I had no real deadline and this was just an opportunity to learn EVEN MORE!
 
-I decided to stick with Javascript and write the server using Node. To make my life a little more difficult and learn a little more in the process, I also decided to avoid prewritten frameworks or modules such as Express and Node-Fetch. As such, you'll find less readable, less sophisticated code within, but it served my main purpose of learning.
+I decided to stick with Javascript and write the server using Node. To challenge myself, I committed to avoiding prewritten frameworks or modules such as Express and Node-Fetch. So keep that in mind if you look over the code...
 
-** WIP. More to come...
+
+/WIP. More to come.../
