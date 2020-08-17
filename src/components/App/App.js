@@ -13,9 +13,9 @@ function App() {
     if (searchTerm) {
       let url;
       if (process.env.NODE_ENV === 'production') {
-        url = new URL(`http://${process.env.REACT_APP_PROD_SERVER}`);
+        url = new URL(`https://${process.env.REACT_APP_PROD_SERVER}`);
       } else {
-        url = new URL(`http://${process.env.REACT_APP_PROXY_URL}`);
+        url = new URL(`https://${process.env.REACT_APP_PROXY_URL}`);
       }
       url.pathname = '/spotify-talks-to-a-genius/tracks';
       url.searchParams.set('lyrics', searchTerm);
