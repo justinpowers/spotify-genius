@@ -26,49 +26,15 @@ const server = http.createServer(async (req, res) => {
   let contentType = 'application/octet-stream';
 
   console.log(url.pathname);
-
-  const baseDir = '/spotify-talks-to-a-genius';
-  const {
-    groups: { base, file },
-  } = url.pathname.match(/^(?<base>\/[^\/]*)(?<file>\/.*)?/);
-  console.log(base, file);
-  if (base === baseDir) {
-    if (file === '/tracks') {
-      if (method === 'GET' || method === 'HEAD') {
-        res.statusCode = 200;
-        contentType = 'application/json';
-        const results = await tracks.getTracks(url.searchParams);
-        body = JSON.stringify(results);
-      } else {
-        res.statusCode = 405;
-        res.setHeader('Allow', 'HEAD, GET');
-      }
+  if (url.pathname === '/spotify-talks-to-a-genius/tracks') {
+    if (method === 'GET' || method === 'HEAD') {
+      res.statusCode = 200;
+      contentType = 'application/json';
+      const results = await tracks.getTracks(url.searchParams);
+      body = JSON.stringify(results);
     } else {
-      const buildDir = './build';
-      const filePath =
-        !file || file === '/' ? `${buildDir}/index.html` : `${buildDir}${file}`;
-      console.log(filePath);
-      try {
-        fs.accessSync(filePath, fs.constants.R_OK);
-        if (method === 'GET' || method === 'HEAD') {
-          res.statusCode = 200;
-          contentType = getMimeTypeFromExtName(filePath);
-          const data = await fs.promises.readFile(filePath, 'utf8');
-          body =
-            contentType === 'application/json' ? JSON.stringify(data) : data;
-        } else {
-          res.statusCode = 405;
-          res.setHeader('Allow', 'HEAD, GET');
-        }
-      } catch (e) {
-        if (e.code === 'ENOENT') {
-          console.log(`Could not read ${url.pathname}`, e);
-          res.statusCode = 404;
-        } else {
-          console.log(`Unexpected error during response: `, e);
-          res.statusCode = 500;
-        }
-      }
+      res.statusCode = 405;
+      res.setHeader('Allow', 'HEAD, GET');
     }
   } else {
     res.statusCode = 404;
