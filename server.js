@@ -14,7 +14,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/spotify-talks-to-a-genius/tracks') {
     if (method === 'GET' || method === 'HEAD') {
       try {
-        const results = await tracks.getTracks(url.searchParam);
+        const results = await tracks.getTracks(url.searchParams);
         body = JSON.stringify(results);
         contentType = 'application/json';
         res.statusCode = 200;
