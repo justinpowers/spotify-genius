@@ -1,26 +1,11 @@
 require('./utils/envvar').load();
 const http = require('http');
-const fs = require('fs');
-const path = require('path');
 const tracks = require('./api/tracks');
 
-function getMimeTypeFromExtName(fileName) {
-  const mimeTypes = {
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'text/javascript',
-    '.json': 'application/json',
-    '.png': 'image/png',
-  };
-  return mimeTypes[path.extname(fileName)] || 'application/octet-stream';
-}
-
 const server = http.createServer(async (req, res) => {
-  const { method, headers } = req;
-  const url = new URL(req.url, `http://${headers.host}`);
-
-  console.log(`Incoming ${method} request for ${url}`);
-  console.log(' Headers: ', req.headers);
+  let { method, headers, url } = req;
+  console.log(`Incoming ${method} request for ${url} with headers:`, headers);
+  url = new URL(url, `http://${headers.host}`);
 
   let body = '';
   let contentType = 'application/octet-stream';
@@ -28,10 +13,15 @@ const server = http.createServer(async (req, res) => {
   console.log(url.pathname);
   if (url.pathname === '/spotify-talks-to-a-genius/tracks') {
     if (method === 'GET' || method === 'HEAD') {
-      res.statusCode = 200;
-      contentType = 'application/json';
-      const results = await tracks.getTracks(url.searchParams);
-      body = JSON.stringify(results);
+      try {
+        const results = await tracks.getTracks(url.searchParam);
+        body = JSON.stringify(results);
+        contentType = 'application/json';
+        res.statusCode = 200;
+      } catch (e) {
+	console.log(e);
+	res.statusCode = 500;
+      }
     } else {
       res.statusCode = 405;
       res.setHeader('Allow', 'HEAD, GET');
@@ -40,14 +30,7 @@ const server = http.createServer(async (req, res) => {
     res.statusCode = 404;
   }
 
-  const statusMessages = {
-    200: 'OK',
-    400: 'Bad Request',
-    404: 'Not Found',
-    405: 'Bad Method',
-    500: 'Internal Server Error',
-  };
-  res.statusMessage = statusMessages[res.statusCode];
+  res.statusMessage = http.STATUS_CODES[res.statusCode];
 
   if (res.statusCode >= 400) {
     body = `<h1>${res.statusCode}: ${res.statusMessage}</h1>`;
