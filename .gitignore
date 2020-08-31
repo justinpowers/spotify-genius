@@ -28,3 +28,4 @@ README.create-react-app
 # lsp
 /.log
 
+*.el
