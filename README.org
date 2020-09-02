@@ -1,7 +1,7 @@
 #+title:Spotify Talks to a Genius
 
-* Quick Description
 An engine that searches the [[https://www.genius.com][Genius]] database for [[http://www.spotify.com][Spotify]]-playable tracks whose lyrics contain the user-submitted search term.
+
 * Background
 This project began as simply a means for learning and exploration. I had been trying to find a project that would allow me to practice my Javascript/React front end skills while utilizing an external API. I settled on playing with the Spotify API because of its high-quality docs and the simple, familiar context (music!).
 
@@ -34,7 +34,7 @@ Additionally, they've gotten into disagreements with Google and others regarding
 + Does not provide any means for filtering or sorting.
 + Requires an API key
 **** Conclusion:
- Even if one could retrieve document content, the combination of limitations described above confounds any attempt to use the API in isolation. For example, suppose a user wanted all lyrics with the term "pumpkins". The query endpoint will include /all/ documents related to the rock-group *The Smashing Pumpkins*. Because The Smashing Pumpkins are so prolific and popular and because "pumpkins" is an otherwise infrequent term, the query result will largely include documents /by/ The Smashing Pumpkins/ even though none of those documents actually have 'pumpkins' /in/ the content. Combined with the limit on results (50) and no ability to filter, it is nearly impossible to use the API to find lyrics that actually include the term 'pumpkins' even though they surely exist.
+ Even if one could retrieve document content, the combination of limitations described above confounds any attempt to use the API in isolation. For example, suppose a user wanted all lyrics with the term "pumpkins". The query endpoint will include /all/ documents related to the rock-group *The Smashing Pumpkins*. Because The Smashing Pumpkins are so prolific and popular and because "pumpkins" is an otherwise infrequent term, the query endpoint will prioritize documents /by/ The Smashing Pumpkins even though none of those documents actually have 'pumpkins' /in/ the content. Combining the overwhelming presence of Smashing Pumpkings documents with the limit on results (50) and no ability to filter, it is nearly impossible to use the API to find lyrics that actually include the term 'pumpkins' even though they surely exist.
 *** HTML scraping
 **** Pros
 + Free to access any data on the website assuming one can understand the structure and manipulate dynamic content.
@@ -55,7 +55,7 @@ Additionally, they've gotten into disagreements with Google and others regarding
 + Includes, to some degree, most of the cons of each method described above
 + More requests
 **** Conclusion
-I chose this route to begin with, but it is still not ideal. It is easier to work with and allows the site to be /mostly/ functional, but it is still limited by the *Smashing Pumpkins* problem described above.
+I chose this route to begin with, but it is still not ideal. It is easier to work with and allows the site to be /mostly/ functional, but it is remains limited by the *Smashing Pumpkins* problem described above.
 ** Structure
 
 #+begin_src plantuml :file output.png
