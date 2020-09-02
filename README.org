@@ -57,7 +57,7 @@ Additionally, they've gotten into disagreements with Google and others regarding
 **** Conclusion
 I chose this route to begin with, but it is still not ideal. It is easier to work with and allows the site to be /mostly/ functional, but it is remains limited by the *Smashing Pumpkins* problem described above.
 ** Structure
-
+[[./output.png]]
 #+begin_src plantuml :file output.png
 
 actor Aesop
