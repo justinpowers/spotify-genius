@@ -8,11 +8,11 @@ This project began as simply a means for learning and exploration. I had been tr
 
 Spotify provides quite a bit of built-in functionality via its API, but it does not offer the ability to search for tracks by lyrics. I figured I could easily use the Genius API in conjunction with the Spotify API to create an online tool to fill this gap. I was mistaken.
 
-Initially expecting to create an SPA, I was disappointed to learn that the Genius API had /at least/ one major limitation: their API does not permit the searching of lyrics. (In fact, it seems that Genius had moved from being focused on lyrics in particular to being focused on document-annotation in general. And therefore, the API revolved around annotations.
+Initially expecting to create an SPA, I was disappointed to learn that the Genius API had /at least/ one major limitation: their API does not permit the searching of lyrics. That along with other limitations (described below) meant I needed rethink the project and include a server.
 
-I decided to stick with Javascript and write the server using Node. To challenge myself, I committed to avoiding pre-written frameworks or modules such as Express and Node-Fetch. So this became more of a back end project rather than front end. It isn't intended for general use, but someone might find it informative.
+I decided to stick with Javascript and write a server using Node. To challenge myself, I committed to avoiding pre-written frameworks or modules such as Express and Node-Fetch. So this became more of a back end project rather than front end.
 
-And, most importantly, it is a work in progress and a playground. It is not intended for general use though you may choose to use it if you so wish. Over time, if I don't get distracted by something with more value or utility (which is high likely), I will try to make both the Genius and Spotify wrappers more decoupled and generally usable.
+Most importantly, it is a playground and a work in progress. It is not intended for general use though you may choose to use it if you so wish. Over time, if I don't get distracted by something with more value or utility (which is high likely), I will try to make both the Genius and Spotify wrappers more decoupled and generally usable.
 
 ** Basic Design Details
 ** The 3 ways to search lyrics on Genius
