@@ -140,7 +140,7 @@ but it is remains limited by the *Smashing Pumpkins* problem described above.
 
 ** Structure
 
-[[./sequence_diagram.png]]
+[[./output.png]]
 
 #+begin_src plantuml :file sequence_diagram.png
 
