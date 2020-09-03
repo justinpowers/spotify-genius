@@ -5,6 +5,7 @@ for [[http://www.spotify.com][Spotify]]-playable tracks
 whose lyrics contain the user-submitted search term.
 
 * Background
+
 This project began simply as a means for learning and exploration.
 I had been trying to find a project
 that would allow me to practice my Javascript/React front end skills
@@ -38,33 +39,76 @@ with more value or utility (which is high likely),
 I will try to make both the Genius and Spotify wrappers more decoupled and generally usable.
 
 * Design Details
-** The 3 ways to search lyrics on Genius
-*** Background
-Genius began as a crowd-sourced lyrics database that allowed users to annotate the lyrics in order to discuss the meaning behind the lyrics. They've since expanded into being a crowd-sourced and licensed database of documents in general, and have refocused on their business on annotations of those documents, whether they be lyrics, manifestos, websites, speech transcript or whatever else finds their way into the database. Their database still retains remnants of its lyrics-focus, particularly with regard to metadata properties and values, and this can create confusion regarding the type of document being examined.
 
-Additionally, they've gotten into disagreements with Google and others regarding the lifting of their lyrics via web scraping. As such, they do not make it easy to scrape documents and, while they provide API access to annotations and certain metadata, they definitely do not provide any API access to the document content itself.
+** The 3 ways to search lyrics on Genius
+
+*** Genius Background
+
+Genius began as a crowd-sourced lyrics database
+that allowed users to annotate the lyrics
+in order to discuss the meaning behind the lyrics.
+They've since expanded into being a crowd-sourced and licensed database of documents in general,
+and have refocused on their business on annotations of those documents,
+whether they be lyrics, manifestos, websites, speech transcript or whatever else finds their way into the database.
+Their database still retains remnants of its prior focus on lyrics,
+particularly with regard to metadata properties and values,
+and this can create confusion regarding the type of document being examined.
+
+Additionally,
+they've gotten into disagreements with Google and others regarding the lifting of their lyrics via web scraping.
+As such, they do not make it easy to scrape documents,
+and,
+while they provide API access to annotations and certain metadata,
+they definitely do not provide any API access to the document content itself.
+
 *** API Query endpoint
+
 **** Pros
+
 + Documented
 + Clean interface
 + Does not violate CORS
 + More Stable.
+
 **** Cons
+
 + Rate limited
+
 + Limited number of results (~50)
+
 + Query endpoint is non-specific. There is no way to limit the query to lyrics only (or any specific document category) and *it will also search metadata*.
-+ Does not provide access to document content AT ALL. Neither by the query endpoint or inclusion in the response data from another endpoint.
-+ Does not provide information about the /type/ of the document, ie whether it is a song, speech, web article, paper
+
++ Does not provide access to document content /at all/, neither directly via the query endpoint nor by inclusion in the response data from another endpoint.
+
++ Does not provide information about the /type/ of the document, ie whether it is a song, speech, web article, paper.
+
 + Does not provide any means for filtering or sorting.
-+ Requires an API key
+
++ Requires an API key.
+
 **** Conclusion:
- Even if one could retrieve document content, the combination of limitations described above confounds any attempt to use the API in isolation. For example, suppose a user wanted all lyrics with the term "pumpkins". The query endpoint will include /all/ documents related to the rock-group *The Smashing Pumpkins*. Because The Smashing Pumpkins are so prolific and popular and because "pumpkins" is an otherwise infrequent term, the query endpoint will prioritize documents /by/ The Smashing Pumpkins even though none of those documents actually have 'pumpkins' /in/ the content. Combining the overwhelming presence of Smashing Pumpkings documents with the limit on results (50) and no ability to filter, it is nearly impossible to use the API to find lyrics that actually include the term 'pumpkins' even though they surely exist.
+
+Even if one could retrieve document content,
+the combination of limitations described above confounds any attempt to use the API in isolation.
+For example,
+suppose a user wanted all lyrics with the term "pumpkins".
+The query endpoint will include /all/ documents related to the rock-group *The Smashing Pumpkins*.
+Because The Smashing Pumpkins are so prolific and popular
+and because "pumpkins" is an otherwise infrequent term,
+the query endpoint will prioritize documents /by/ The Smashing Pumpkins even though none of those documents actually have 'pumpkins' /in/ the content.
+Combining the overwhelming presence of Smashing Pumpkings documents with the limit on results (50) and no ability to filter,
+it is nearly impossible to use the API to find lyrics that actually include the term 'pumpkins' even though they surely exist.
+ 
 *** HTML scraping
+
 **** Pros
+
 + Free to access any data on the website assuming one can understand the structure and manipulate dynamic content.
 + In some cases, I found that Genius includes the Spotify ID for tracks hidden within the page's metadata. This seems to be because Genius and Spotify have (/or had?/) a partnership. This is useful for this app as it reduces calls to the Spotify API, /but/ this data is not usually present and not always accurate. Nonetheless, it helps.
 + Does not require a key
+
 **** Cons
+
 + It is far more difficult than a simple API call. Manipulation of /some/ dynamic content may require clever hacks or be practically unfeasible.
 + Undocumented
 + Less stable, subject to breaking changes without notice
