@@ -73,17 +73,16 @@ they definitely do not provide any API access to the document content itself.
 **** Cons
 
 + Rate limited
-
 + Limited number of results (~50)
-
-+ Query endpoint is non-specific. There is no way to limit the query to lyrics only (or any specific document category) and *it will also search metadata*.
-
-+ Does not provide access to document content /at all/, neither directly via the query endpoint nor by inclusion in the response data from another endpoint.
-
-+ Does not provide information about the /type/ of the document, ie whether it is a song, speech, web article, paper.
-
++ Query endpoint is non-specific.
+  There is no way to limit the query to lyrics only (or any specific document category)
+  and *it will also search metadata*.
++ Does not provide access to document content /at all/,
+  neither directly via the query endpoint
+  nor by inclusion in the response data from another endpoint.
++ Does not provide information about the /type/ of the document,
+  ie whether it is a song, speech, web article, paper.
 + Does not provide any means for filtering or sorting.
-
 + Requires an API key.
 
 **** Conclusion:
@@ -104,29 +103,46 @@ it is nearly impossible to use the API to find lyrics that actually include the 
 **** Pros
 
 + Free to access any data on the website assuming one can understand the structure and manipulate dynamic content.
-+ In some cases, I found that Genius includes the Spotify ID for tracks hidden within the page's metadata. This seems to be because Genius and Spotify have (/or had?/) a partnership. This is useful for this app as it reduces calls to the Spotify API, /but/ this data is not usually present and not always accurate. Nonetheless, it helps.
++ In some cases, I found that Genius includes the Spotify ID for tracks hidden within the page's metadata.
+  This seems to be because Genius and Spotify have (/or had?/) a partnership.
+  This is useful for this app as it reduces calls to the Spotify API,
+  /but/ this data is not usually present and not always accurate.
+  Nonetheless, it helps.
 + Does not require a key
 
 **** Cons
 
-+ It is far more difficult than a simple API call. Manipulation of /some/ dynamic content may require clever hacks or be practically unfeasible.
++ It is far more difficult than a simple API call.
+  Manipulation of /some/ dynamic content may require clever hacks or be practically unfeasible.
 + Undocumented
 + Less stable, subject to breaking changes without notice
 + Slower
 + Requires more resources
 + Must be server-side due to CORS
+
 *** API Query + HTML scraping
+
 **** Pros
+
 + Provides a little more stability and documentation
 + Quicker development than HTML scraping alone
+
 **** Cons
+
 + Includes, to some degree, most of the cons of each method described above
 + More requests
+
 **** Conclusion
-I chose this route to begin with, but it is still not ideal. It is easier to work with and allows the site to be /mostly/ functional, but it is remains limited by the *Smashing Pumpkins* problem described above.
+
+I chose this route to begin with, but it is still not ideal.
+It is easier to work with and allows the site to be /mostly/ functional,
+but it is remains limited by the *Smashing Pumpkins* problem described above.
+
 ** Structure
-[[./output.png]]
-#+begin_src plantuml :file output.png
+
+[[./sequence_diagram.png]]
+
+#+begin_src plantuml :file sequence_diagram.png
 
 actor Aesop
 participant s2g as "Spotify\nTalks to a\nGenius"
@@ -163,10 +179,11 @@ deactivate s2g
 
 #+end_src
 
-* TODOS
+*WIP...
+** TODO Refine this documentation and the following todos...
 ** TODO Decouple Genius/Spotify wrapper functions from core
-*** [ ] move core functions in track.js into a new file named: api/query.js
-*** [ ] rewrite api call to use query endpoint
-*** [ ] query endpoint should expect a single variable q that will contain the search terms
-*** [ ] parse q value into separate variables: lyrics, track, artist, album
-** TODO [#B]
+- [ ] move core functions in track.js into a new file named: api/query.js
+- [ ] rewrite api call to use query endpoint
+- [ ] query endpoint should expect a single variable q that will contain the search terms
+- [ ] parse q value into separate variables: lyrics, track, artist, album
+...
