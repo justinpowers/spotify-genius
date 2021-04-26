@@ -3,18 +3,15 @@ import PropTypes from 'prop-types';
 import './TrackList.css';
 import Track from '../Track/Track';
 
-function TrackList({ trackList }) {
-  return (
-    <ul className="TrackList">
-      {trackList.map((track) => (
-        <Track key={track.id.toString()} track={track} />
-      ))}
-    </ul>
-  );
+function TrackList({ tracks }) {
+  const trackList = tracks.map((track) => (
+    <Track key={track.id.toString()} track={track} />
+  ));
+  return <ul className="TrackList">{trackList}</ul>;
 }
 
 TrackList.propTypes = {
-  trackList: PropTypes.arrayOf(PropTypes.object).isRequired,
+  tracks: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 export default TrackList;

@@ -19,7 +19,7 @@ li.Track .Art img {
 
 li.Track .Details {
   text-align: left;
-  display: flex; 
+  display: flex;
   flex-direction: column;
   flex-wrap: wrap;
 }
@@ -30,11 +30,17 @@ li.Track .Title {
 }
 
 li.Track .Artist {
-  font-size: .80rem;
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
 li.Track .AlbumAndYear {
-  font-size: .75rem;
+  font-size: 0.75rem;
   font-weight: 200;
+}
+
+li.Track .Lyrics {
+  font-size: 0.9rem;
+  font-weight: 400;
+  white-space: pre-wrap;
 }

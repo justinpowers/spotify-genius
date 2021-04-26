@@ -19,8 +19,8 @@ const server = http.createServer(async (req, res) => {
         contentType = 'application/json';
         res.statusCode = 200;
       } catch (e) {
-	console.log(e);
-	res.statusCode = 500;
+        console.log(e);
+        res.statusCode = 500;
       }
     } else {
       res.statusCode = 405;

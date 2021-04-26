@@ -180,6 +180,7 @@ deactivate s2g
 #+end_src
 
 *WIP...
+* To-Dos
 ** TODO Refine this documentation and the following todos...
 ** TODO Decouple Genius/Spotify wrapper functions from core
 - [ ] move core functions in track.js into a new file named: api/query.js
